@@ -185,7 +185,7 @@ border_wait.responses[2]
 
 Send each existing element with a separate **Send Message** action.
 
-A pause between sequential messages is **required for reliable multi-POE delivery**. Without it, MeshMonitor may attempt to transmit several Meshtastic packets too quickly and later replies can be missed. Use a **2-second Pause** between each Send Message action.
+A delay between sequential messages is **required for reliable multi-POE delivery**. Without it, MeshMonitor may attempt to transmit several Meshtastic packets too quickly and later replies can be missed. Use a **2-second Delay (`action.delay`)** between each Send Message action.
 
 Example:
 
@@ -194,12 +194,12 @@ Run Script
  ├─ response exists ─────────────→ Send Message
  └─ responses[0] exists ─────────→ Send Message 0
                                   ↓
-                               Pause 2s
+                               Delay 2s
                                   ↓
                     responses[1] exists?
                          ├─ yes → Send Message 1
                          │          ↓
-                         │        Pause 2s
+                         │        Delay 2s
                          │          ↓
                          │   responses[2] exists?
                          │       └─ yes → Send Message 2
@@ -210,10 +210,10 @@ Select the MeshMonitor source and Meshtastic channel you want the replies transm
 For multi-POE commands such as `/detroitborder`, `/nogalesborder`, `/elpasoborder`, `/laredoborder`, `/buffaloborder`, and `/blaineborder`, do **not** connect multiple Send Message actions directly back-to-back. The tested pattern is:
 
 ```text
-Send Message 0 → Pause 2s → Send Message 1 → Pause 2s → Send Message 2
+Send Message 0 → Delay 2s → Send Message 1 → Delay 2s → Send Message 2
 ```
 
-This pacing is part of the intended Automation Engine setup, not just an optional cosmetic delay.
+This pacing is part of the intended Automation Engine setup, not just an optional cosmetic delay. It was verified in a live multi-POE test: `/detroitbwt` successfully delivered all three Detroit POE messages after the responses were serialized with 2-second Delay actions.
 
 ## Testing
 
