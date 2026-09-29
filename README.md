@@ -22,150 +22,193 @@ The incoming Meshtastic message is available to the script as `MESSAGE`.
 
 ## Commands
 
-Commands use the form `/<port>bwt`. The command identifies a **CBP POE area/port group**. When CBP publishes several individual crossings under that area, one command returns all matching POEs and may generate multiple Meshtastic messages.
+Commands use the form `/<name>bwt`.
 
-### Mexican border — grouped POE areas
+Each border location is organized by **POE Area**. The **Area command** returns every crossing currently grouped by CBP under that area. **Individual POE commands** are nested directly below the area and return only that crossing.
 
-#### Nogales — `/nogalesbwt`
-Returns all POEs currently grouped by CBP under **Nogales**:
-- DeConcini
-- Mariposa
-- Morley Gate
+### Mexican Border
 
-#### El Paso — `/elpasobwt`
-Returns all POEs currently grouped by CBP under **El Paso**:
-- Bridge of the Americas (BOTA)
-- Paso Del Norte (PDN)
-- Stanton DCL
-- Ysleta
+#### Nogales
+- **Area:** `/nogalesbwt` — all Nogales POEs
+  - `/deconcinibwt` — DeConcini
+  - `/mariposabwt` — Mariposa
+  - `/morleybwt` — Morley Gate
 
-#### Brownsville — `/brownsvillebwt`
-Returns all POEs currently grouped by CBP under **Brownsville**:
-- B&M
-- Gateway
-- Los Indios
-- Veterans International
+#### El Paso
+- **Area:** `/elpasobwt` — all El Paso POEs
+  - `/botabwt` — Bridge of the Americas (BOTA)
+  - `/pdnbwt` — Paso Del Norte (PDN)
+  - `/stantonbwt` — Stanton DCL
+  - `/ysletabwt` — Ysleta
 
-#### Calexico — `/calexicobwt`
-Returns all POEs currently grouped by CBP under **Calexico**:
-- East
-- West
+#### Brownsville
+- **Area:** `/brownsvillebwt` — all Brownsville POEs
+  - B&M
+  - Gateway
+  - Los Indios
+  - Veterans International
 
-#### Eagle Pass — `/eaglepassbwt`
-Returns all POEs currently grouped by CBP under **Eagle Pass**:
-- Bridge I
-- Bridge II
+#### Calexico
+- **Area:** `/calexicobwt` — all Calexico POEs
+  - East
+  - West
 
-#### Hidalgo/Pharr — `/hidalgopharrbwt`
-Returns all POEs currently grouped by CBP under **Hidalgo/Pharr**:
-- Anzalduas International Bridge
-- Hidalgo
-- Pharr
+#### Eagle Pass
+- **Area:** `/eaglepassbwt` — all Eagle Pass POEs
+  - Bridge I
+  - Bridge II
 
-#### Laredo — `/laredobwt`
-Returns all POEs currently grouped by CBP under **Laredo**:
-- Bridge I
-- Bridge II
-- Colombia Solidarity
-- World Trade Bridge
+#### Hidalgo/Pharr
+- **Area:** `/hidalgopharrbwt` — all Hidalgo/Pharr POEs
+  - `/anzalduasbwt` — Anzalduas International Bridge
+  - `/hidalgobwt` — Hidalgo
+  - `/pharrbwt` — Pharr
 
-#### Progreso — `/progresobwt`
-Returns all POEs currently grouped by CBP under **Progreso**:
-- Donna International Bridge
-- Progreso International Bridge
+#### Laredo
+- **Area:** `/laredobwt` — all Laredo POEs
+  - Bridge I
+  - Bridge II
+  - Colombia Solidarity
+  - World Trade Bridge
 
-### Other Mexican-border area commands
+#### Progreso
+- **Area:** `/progresobwt` — all Progreso POEs
+  - Donna International Bridge
+  - Progreso International Bridge
 
-- `/andradebwt`
-- `/columbusbwt`
-- `/delriobwt`
-- `/douglasbwt` — Douglas (Raul Hector Castro)
-- `/forthancockbwt`
-- `/lukevillebwt`
-- `/nacobwt`
-- `/otaymesabwt`
-- `/presidiobwt`
-- `/riograndecitybwt`
-- `/romabwt`
-- `/sanluisbwt`
-- `/sanysidrobwt` (alias: `/sandiegobwt`)
-- `/santateresabwt`
-- `/tecatebwt`
+#### Andrade
+- **Area:** `/andradebwt`
 
-### Canadian border — grouped POE areas
+#### Columbus
+- **Area:** `/columbusbwt`
 
-#### Blaine — `/blainebwt`
-Returns all POEs currently grouped by CBP under **Blaine**:
-- Pacific Highway
-- Peace Arch
-- Point Roberts
+#### Del Rio
+- **Area:** `/delriobwt`
 
-#### Buffalo/Niagara Falls — `/buffalobwt`
-Returns all POEs currently grouped by CBP under **Buffalo/Niagara Falls**:
-- Lewiston Bridge
-- Peace Bridge
-- Rainbow Bridge
-- Whirlpool Bridge
+#### Douglas
+- **Area:** `/douglasbwt` — Douglas (Raul Hector Castro)
 
-#### Calais — `/calaisbwt`
-Returns all POEs currently grouped by CBP under **Calais**:
-- Ferry Point
-- International Avenue
-- Milltown
+#### Fort Hancock
+- **Area:** `/forthancockbwt`
 
-#### Detroit — `/detroitbwt`
-Returns all POEs currently grouped by CBP under **Detroit**:
-- Ambassador Bridge
-- Gordie Howe International Bridge
-- Windsor Tunnel
+#### Lukeville
+- **Area:** `/lukevillebwt`
 
-A live test of `/detroitbwt` delivered all three Detroit POE replies after the Automation Engine responses were serialized with 2-second Delay actions.
+#### Naco
+- **Area:** `/nacobwt`
 
-### Other Canadian-border area commands
+#### Otay Mesa
+- **Area:** `/otaymesabwt`
 
-- `/alexandriabaybwt` — Thousand Islands Bridge
-- `/champlainbwt`
-- `/derbylinebwt` — Derby Line I-91
-- `/highgatespringsbwt`
-- `/houltonbwt`
-- `/internationalfallsbwt`
-- `/jackmanbwt`
-- `/lyndenbwt`
-- `/madawaskabwt`
-- `/massenabwt`
-- `/nortonbwt`
-- `/ogdensburgbwt`
-- `/pembinabwt`
-- `/porthuronbwt` — Bluewater Bridge
-- `/saultstemariebwt` — International Bridge - SSM
-- `/sumasbwt`
-- `/sweetgrassbwt`
+#### Presidio
+- **Area:** `/presidiobwt`
 
-### Individual POE commands
+#### Rio Grande City
+- **Area:** `/riograndecitybwt`
 
-You can also request a **single crossing** instead of every POE in an area. Individual crossing resolution is attempted before the grouped CBP port resolver.
+#### Roma
+- **Area:** `/romabwt`
 
-Examples:
+#### San Luis
+- **Area:** `/sanluisbwt`
 
-```text
-/nogalesbwt       → all Nogales POEs
-/mariposabwt      → Mariposa only
-/deconcinibwt     → DeConcini only
-/morleybwt        → Morley Gate only
+#### San Ysidro
+- **Area:** `/sanysidrobwt`
+- **Alias:** `/sandiegobwt`
 
-/hidalgopharrbwt  → all Hidalgo/Pharr POEs
-/anzalduasbwt     → Anzalduas International Bridge only
+#### Santa Teresa
+- **Area:** `/santateresabwt`
 
-/elpasobwt        → all El Paso POEs
-/botabwt          → Bridge of the Americas only
-/pdnbwt           → Paso Del Norte only
-/stantonbwt       → Stanton DCL only
-/ysletabwt        → Ysleta only
-```
+#### Tecate
+- **Area:** `/tecatebwt`
 
-The resolver also attempts to match unique CBP `crossing_name` values dynamically, so many individual POEs do not require a hard-coded alias. Short aliases are included where the normal crossing name would make the command unnecessarily long.
+### Canadian Border
 
-> **Multiple-message behavior:** grouped areas can exceed the compact reply budget. When that happens, the script returns multiple responses and the Automation Engine sends them sequentially with 2-second delays. The exact POE list can change if CBP changes its `port_name` grouping.
+#### Blaine
+- **Area:** `/blainebwt` — all Blaine POEs
+  - Pacific Highway
+  - Peace Arch
+  - Point Roberts
+
+#### Buffalo/Niagara Falls
+- **Area:** `/buffalobwt` — all Buffalo/Niagara Falls POEs
+  - Lewiston Bridge
+  - Peace Bridge
+  - Rainbow Bridge
+  - Whirlpool Bridge
+
+#### Calais
+- **Area:** `/calaisbwt` — all Calais POEs
+  - Ferry Point
+  - International Avenue
+  - Milltown
+
+#### Detroit
+- **Area:** `/detroitbwt` — all Detroit POEs
+  - Ambassador Bridge
+  - Gordie Howe International Bridge
+  - Windsor Tunnel
+
+#### Alexandria Bay
+- **Area:** `/alexandriabaybwt`
+  - Thousand Islands Bridge
+
+#### Champlain
+- **Area:** `/champlainbwt`
+
+#### Derby Line
+- **Area:** `/derbylinebwt`
+  - Derby Line I-91
+
+#### Highgate Springs
+- **Area:** `/highgatespringsbwt`
+
+#### Houlton
+- **Area:** `/houltonbwt`
+
+#### International Falls
+- **Area:** `/internationalfallsbwt`
+
+#### Jackman
+- **Area:** `/jackmanbwt`
+
+#### Lynden
+- **Area:** `/lyndenbwt`
+
+#### Madawaska
+- **Area:** `/madawaskabwt`
+
+#### Massena
+- **Area:** `/massenabwt`
+
+#### Norton
+- **Area:** `/nortonbwt`
+
+#### Ogdensburg
+- **Area:** `/ogdensburgbwt`
+
+#### Pembina
+- **Area:** `/pembinabwt`
+
+#### Port Huron
+- **Area:** `/porthuronbwt`
+  - Bluewater Bridge
+
+#### Sault Ste. Marie
+- **Area:** `/saultstemariebwt`
+  - International Bridge - SSM
+
+#### Sumas
+- **Area:** `/sumasbwt`
+
+#### Sweetgrass
+- **Area:** `/sweetgrassbwt`
+
+> **Individual POE resolution:** the script checks CBP `crossing_name` before the grouped `port_name`. A unique individual crossing command therefore returns only that POE. Short aliases such as `/botabwt`, `/pdnbwt`, and `/morleybwt` are provided where useful.
+
+> **Multiple-message behavior:** Area commands can exceed the compact reply budget. When that happens, the script returns multiple responses and the Automation Engine sends them sequentially with 2-second delays. The exact POE list can change if CBP changes its `port_name` grouping.
+
+A live test of `/detroitbwt` successfully delivered all three Detroit POE replies using the serialized 2-second Delay workflow.
 
 ## What it reports
 
