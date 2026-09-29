@@ -368,6 +368,34 @@ Run Script
 
 Select the MeshMonitor source and Meshtastic channel you want the replies transmitted on in the **Send Message** actions.
 
+### Limit replies to a single MeshMonitor source
+
+By default, a **Send Message** action with no selected source uses the source that triggered the automation. To force BWT replies to transmit through one specific connected MeshMonitor source, set `sourceIds` in every `action.sendMessage` node.
+
+Example:
+
+```json
+{
+  "id": "send_single",
+  "type": "action.sendMessage",
+  "params": {
+    "text": "{{ var.border_wait.response }}",
+    "replyToTrigger": true,
+    "sourceIds": [
+      "YOUR-MESHMONITOR-SOURCE-ID"
+    ]
+  }
+}
+```
+
+For a multi-response workflow, add the same `sourceIds` array to every Send Message node (`send_0`, `send_1`, etc.). This leaves the trigger, script, conditions, and delays unchanged.
+
+This is especially useful for advanced JSON workflows that can no longer be opened in the visual builder because they contain branches/fanout.
+
+A live test confirmed this configuration can receive the BWT command through any connected source while transmitting the reply only through the selected source.
+
+> Use the source ID from your own MeshMonitor installation. Do not copy an ID from another deployment.
+
 For multi-POE commands such as `/detroitbwt`, `/nogalesbwt`, `/elpasobwt`, `/laredobwt`, `/buffalobwt`, and `/blainebwt`, do **not** connect multiple Send Message actions directly back-to-back. The tested pattern is:
 
 ```text
