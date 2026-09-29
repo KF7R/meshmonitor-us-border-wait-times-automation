@@ -22,7 +22,9 @@ The incoming Meshtastic message is available to the script as `MESSAGE`.
 
 ## Commands
 
-Commands use the form `/<port>border`.
+Commands use the form `/<port>border`. These are **city/CBP port-level commands**: when CBP groups more than one Port of Entry (POE)/crossing under that city or port, the command returns **all of those POEs**. If the combined report is too large for one Meshtastic reply, the Automation Engine can send it as **multiple messages**.
+
+Commands marked **ALL POEs** below are notable examples where one city/port command can return several crossings from the current CBP grouping.
 
 Examples:
 
@@ -36,38 +38,38 @@ Examples:
 ### Mexican border
 
 - `/andradeborder`
-- `/brownsvilleborder`
-- `/calexicoborder`
+- `/brownsvilleborder` — **ALL POEs** grouped by CBP under Brownsville
+- `/calexicoborder` — **ALL POEs** grouped by CBP under Calexico
 - `/columbusborder`
 - `/delrioborder`
 - `/douglasborder`
 - `/eaglepassborder`
-- `/elpasoborder`
+- `/elpasoborder` — **ALL POEs** grouped by CBP under El Paso
 - `/forthancockborder`
 - `/hidalgopharrborder`
-- `/laredoborder`
+- `/laredoborder` — **ALL POEs** grouped by CBP under Laredo
 - `/lukevilleborder`
 - `/nacoborder`
-- `/nogalesborder`
+- `/nogalesborder` — **ALL POEs** grouped by CBP under Nogales (for example DeConcini, Mariposa and Morley Gate)
 - `/otaymesaborder`
 - `/presidioborder`
 - `/progresoborder`
 - `/riograndecityborder`
 - `/romaborder`
 - `/sanluisborder`
-- `/sanysidroborder` (alias: `/sandiegoborder`)
+- `/sanysidroborder` (alias: `/sandiegoborder`) — returns all crossings CBP groups under the San Ysidro port entry
 - `/santateresaborder`
 - `/tecateborder`
 
 ### Canadian border
 
 - `/alexandriabayborder`
-- `/blaineborder`
-- `/buffaloborder`
+- `/blaineborder` — **ALL POEs** grouped by CBP under Blaine (for example Pacific Highway, Peace Arch and Point Roberts)
+- `/buffaloborder` — **ALL POEs** grouped by CBP under Buffalo/Niagara Falls
 - `/calaisborder`
 - `/champlainborder`
 - `/derbylineborder`
-- `/detroitborder`
+- `/detroitborder` — **ALL POEs** grouped by CBP under Detroit (for example Ambassador Bridge, Gordie Howe International Bridge and Windsor Tunnel)
 - `/highgatespringsborder`
 - `/houltonborder`
 - `/internationalfallsborder`
@@ -83,7 +85,7 @@ Examples:
 - `/sumasborder`
 - `/sweetgrassborder`
 
-CBP can group multiple crossings under one port. For example, `/nogalesborder` can include DeConcini, Mariposa and Morley Gate.
+**Important:** the responder follows CBP's `port_name` grouping rather than maintaining its own city-to-crossing list. Therefore a city/port command returns every matching POE/crossing present in that CBP group at the time of the request. Large groups—such as Nogales, El Paso, Brownsville, Laredo, Buffalo/Niagara Falls, Detroit and others—may exceed the compact reply budget and trigger **two or more Meshtastic messages**. The exact number depends on the crossings and wait-time data returned by CBP.
 
 ## What it reports
 
