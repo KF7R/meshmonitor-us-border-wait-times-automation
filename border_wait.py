@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 
 API_URL = "https://bwt.cbp.gov/api/waittimes"
-HEADERS = {"User-Agent": "MeshMonitor-US-BorderWait-Automation/1.0"}
+HEADERS = {"User-Agent": "MeshMonitor-US-BorderWait-Automation/1.1"}
 TIMEOUT = 8
 MAX_REPLY_CHARS = 195
 
@@ -28,6 +28,21 @@ ALIASES = {
     "niagarafalls": "buffaloniagarafalls",
     "sault": "saultstemarie",
     "saultstemarie": "saultstemarie",
+}
+
+# Friendly aliases for individual CBP crossing names. Commands not listed here
+# can still resolve dynamically when the command uniquely matches a crossing_name.
+CROSSING_ALIASES = {
+    "anzalduas": "anzalduasinternationalbridge",
+    "bota": "bridgeoftheamericas",
+    "deconcini": "deconcini",
+    "mariposa": "mariposa",
+    "morley": "morleygate",
+    "morleygate": "morleygate",
+    "pdn": "pasodelnorte",
+    "stanton": "stantondcl",
+    "stantondcl": "stantondcl",
+    "ysleta": "ysleta",
 }
 
 def normalize(value):
@@ -47,11 +62,35 @@ def requested_command():
     return match.group(1) if match else None
 
 def resolve_ports(data, command):
-    wanted = ALIASES.get(command, command)
     border_ports = [
         p for p in data
         if p.get("border") in ("Mexican Border", "Canadian Border")
     ]
+
+    # Resolve an individual POE/crossing first. This lets commands such as
+    # /mariposabwt or /anzalduasbwt return one crossing while preserving
+    # grouped commands such as /nogalesbwt and /hidalgopharrbwt.
+    crossing_wanted = CROSSING_ALIASES.get(command, command)
+
+    crossing_exact = [
+        p for p in border_ports
+        if normalize(p.get("crossing_name", "")) == crossing_wanted
+    ]
+    if len(crossing_exact) == 1:
+        return crossing_exact
+
+    crossing_prefix = [
+        p for p in border_ports
+        if normalize(p.get("crossing_name", "")).startswith(crossing_wanted)
+    ]
+    crossing_names = {
+        normalize(p.get("crossing_name", "")) for p in crossing_prefix
+    }
+    if len(crossing_names) == 1:
+        return crossing_prefix
+
+    # Fall back to the existing grouped CBP port_name resolver.
+    wanted = ALIASES.get(command, command)
 
     exact = [
         p for p in border_ports
