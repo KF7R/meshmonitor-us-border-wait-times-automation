@@ -166,11 +166,11 @@ def crossing_line(port):
 def build_report(data, command):
     matches = resolve_ports(data, command)
     if not matches:
-        return f"🛂 /{command}border: CBP port not found."
+        return f"🛂 /{command}bwt: CBP port not found."
 
     lines = [line for p in matches if (line := crossing_line(p))]
     if not lines:
-        return f"🛂 /{command}border: waits unavailable."
+        return f"🛂 /{command}bwt: waits unavailable."
 
     message = "\n".join(lines)
     if len(message) <= MAX_REPLY_CHARS:
@@ -181,7 +181,7 @@ def main():
     command = requested_command()
     if not command:
         print(json.dumps({
-            "response": "🛂 Use /<port>border, e.g. /nogalesborder or /detroitborder"
+            "response": "🛂 Use /<port>bwt, e.g. /nogalesbwt or /detroitbwt"
         }, ensure_ascii=False))
         return
 
