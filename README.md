@@ -239,9 +239,18 @@ https://bwt.cbp.gov/api/waittimes
 
 No authentication is required.
 
-## Installation
+## Installation from GitHub
 
-Bind-mount a scripts directory into MeshMonitor if you do not already have one:
+If MeshMonitor is installed in `~/meshmonitor` and `~/meshmonitor/scripts` is bind-mounted to `/data/scripts`, install the responder directly from this repository:
+
+```bash
+mkdir -p ~/meshmonitor/scripts
+curl -fsSL https://raw.githubusercontent.com/KF7R/meshmonitor-us-border-wait-times-automation/main/border_wait.py \
+  -o ~/meshmonitor/scripts/border_wait.py \
+  && chmod +x ~/meshmonitor/scripts/border_wait.py
+```
+
+The scripts directory should be mounted into the MeshMonitor container:
 
 ```yaml
 services:
@@ -251,12 +260,41 @@ services:
       - ./scripts:/data/scripts
 ```
 
-Copy `border_wait.py` into the mounted directory and make it executable:
+### Verify the downloaded script
+
+Test an individual POE directly inside the MeshMonitor container. This lookup does **not** transmit a Meshtastic message:
 
 ```bash
-cp border_wait.py ~/meshmonitor/scripts/
-chmod +x ~/meshmonitor/scripts/border_wait.py
+docker exec -e MESSAGE="/mariposabwt" meshmonitor \
+  python3 /data/scripts/border_wait.py
 ```
+
+Example result:
+
+```json
+{"response": "🟢 Mariposa · 6am-10pm · 🚗0m 🚶0m"}
+```
+
+Then verify an Area command:
+
+```bash
+docker exec -e MESSAGE="/nogalesbwt" meshmonitor \
+  python3 /data/scripts/border_wait.py
+```
+
+The Area command should return the individual POEs currently grouped by CBP under Nogales.
+
+### Update from GitHub
+
+To replace the installed script with the current version from the `main` branch:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/KF7R/meshmonitor-us-border-wait-times-automation/main/border_wait.py \
+  -o ~/meshmonitor/scripts/border_wait.py \
+  && chmod +x ~/meshmonitor/scripts/border_wait.py
+```
+
+After updating, run one of the local verification commands above before testing over Meshtastic.
 
 ## Automation Engine setup
 
