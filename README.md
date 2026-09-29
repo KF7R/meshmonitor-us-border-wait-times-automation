@@ -22,54 +22,110 @@ The incoming Meshtastic message is available to the script as `MESSAGE`.
 
 ## Commands
 
-Commands use the form `/<port>bwt`. These are **city/CBP port-level commands**: when CBP groups more than one Port of Entry (POE)/crossing under that city or port, the command returns **all of those POEs**. If the combined report is too large for one Meshtastic reply, the Automation Engine can send it as **multiple messages**.
+Commands use the form `/<port>bwt`. The command identifies a **CBP POE area/port group**. When CBP publishes several individual crossings under that area, one command returns all matching POEs and may generate multiple Meshtastic messages.
 
-Commands marked **ALL POEs** below are notable examples where one city/port command can return several crossings from the current CBP grouping.
+### Mexican border — grouped POE areas
 
-Examples:
+#### Nogales — `/nogalesbwt`
+Returns all POEs currently grouped by CBP under **Nogales**:
+- DeConcini
+- Mariposa
+- Morley Gate
 
-```text
-/nogalesbwt
-/detroitbwt
-/blainebwt
-/sanysidrobwt
-```
+#### El Paso — `/elpasobwt`
+Returns all POEs currently grouped by CBP under **El Paso**:
+- Bridge of the Americas (BOTA)
+- Paso Del Norte (PDN)
+- Stanton DCL
+- Ysleta
 
-### Mexican border
+#### Brownsville — `/brownsvillebwt`
+Returns all POEs currently grouped by CBP under **Brownsville**:
+- B&M
+- Gateway
+- Los Indios
+- Veterans International
+
+#### Calexico — `/calexicobwt`
+Returns all POEs currently grouped by CBP under **Calexico**:
+- East
+- West
+
+#### Eagle Pass — `/eaglepassbwt`
+Returns all POEs currently grouped by CBP under **Eagle Pass**:
+- Bridge I
+- Bridge II
+
+#### Hidalgo/Pharr — `/hidalgopharrbwt`
+Returns all POEs currently grouped by CBP under **Hidalgo/Pharr**:
+- Anzalduas International Bridge
+- Hidalgo
+- Pharr
+
+#### Laredo — `/laredobwt`
+Returns all POEs currently grouped by CBP under **Laredo**:
+- Bridge I
+- Bridge II
+- Colombia Solidarity
+- World Trade Bridge
+
+#### Progreso — `/progresobwt`
+Returns all POEs currently grouped by CBP under **Progreso**:
+- Donna International Bridge
+- Progreso International Bridge
+
+### Other Mexican-border area commands
 
 - `/andradebwt`
-- `/brownsvillebwt` — **ALL POEs** grouped by CBP under Brownsville
-- `/calexicobwt` — **ALL POEs** grouped by CBP under Calexico
 - `/columbusbwt`
 - `/delriobwt`
-- `/douglasbwt`
-- `/eaglepassbwt`
-- `/elpasobwt` — **ALL POEs** grouped by CBP under El Paso
+- `/douglasbwt` — Douglas (Raul Hector Castro)
 - `/forthancockbwt`
-- `/hidalgopharrbwt`
-- `/laredobwt` — **ALL POEs** grouped by CBP under Laredo
 - `/lukevillebwt`
 - `/nacobwt`
-- `/nogalesbwt` — **ALL POEs** grouped by CBP under Nogales (for example DeConcini, Mariposa and Morley Gate)
 - `/otaymesabwt`
 - `/presidiobwt`
-- `/progresobwt`
 - `/riograndecitybwt`
 - `/romabwt`
 - `/sanluisbwt`
-- `/sanysidrobwt` (alias: `/sandiegobwt`) — returns all crossings CBP groups under the San Ysidro port entry
+- `/sanysidrobwt` (alias: `/sandiegobwt`)
 - `/santateresabwt`
 - `/tecatebwt`
 
-### Canadian border
+### Canadian border — grouped POE areas
 
-- `/alexandriabaybwt`
-- `/blainebwt` — **ALL POEs** grouped by CBP under Blaine (for example Pacific Highway, Peace Arch and Point Roberts)
-- `/buffalobwt` — **ALL POEs** grouped by CBP under Buffalo/Niagara Falls
-- `/calaisbwt`
+#### Blaine — `/blainebwt`
+Returns all POEs currently grouped by CBP under **Blaine**:
+- Pacific Highway
+- Peace Arch
+- Point Roberts
+
+#### Buffalo/Niagara Falls — `/buffalobwt`
+Returns all POEs currently grouped by CBP under **Buffalo/Niagara Falls**:
+- Lewiston Bridge
+- Peace Bridge
+- Rainbow Bridge
+- Whirlpool Bridge
+
+#### Calais — `/calaisbwt`
+Returns all POEs currently grouped by CBP under **Calais**:
+- Ferry Point
+- International Avenue
+- Milltown
+
+#### Detroit — `/detroitbwt`
+Returns all POEs currently grouped by CBP under **Detroit**:
+- Ambassador Bridge
+- Gordie Howe International Bridge
+- Windsor Tunnel
+
+A live test of `/detroitbwt` delivered all three Detroit POE replies after the Automation Engine responses were serialized with 2-second Delay actions.
+
+### Other Canadian-border area commands
+
+- `/alexandriabaybwt` — Thousand Islands Bridge
 - `/champlainbwt`
-- `/derbylinebwt`
-- `/detroitbwt` — **ALL POEs** grouped by CBP under Detroit (for example Ambassador Bridge, Gordie Howe International Bridge and Windsor Tunnel)
+- `/derbylinebwt` — Derby Line I-91
 - `/highgatespringsbwt`
 - `/houltonbwt`
 - `/internationalfallsbwt`
@@ -80,12 +136,12 @@ Examples:
 - `/nortonbwt`
 - `/ogdensburgbwt`
 - `/pembinabwt`
-- `/porthuronbwt`
-- `/saultstemariebwt`
+- `/porthuronbwt` — Bluewater Bridge
+- `/saultstemariebwt` — International Bridge - SSM
 - `/sumasbwt`
 - `/sweetgrassbwt`
 
-**Important:** the responder follows CBP's `port_name` grouping rather than maintaining its own city-to-crossing list. Therefore a city/port command returns every matching POE/crossing present in that CBP group at the time of the request. Large groups—such as Nogales, El Paso, Brownsville, Laredo, Buffalo/Niagara Falls, Detroit and others—may exceed the compact reply budget and trigger **two or more Meshtastic messages**. The exact number depends on the crossings and wait-time data returned by CBP.
+> **Multiple-message behavior:** grouped areas can exceed the compact reply budget. When that happens, the script returns multiple responses and the Automation Engine sends them sequentially with 2-second delays. The exact POE list can change if CBP changes its `port_name` grouping.
 
 ## What it reports
 
