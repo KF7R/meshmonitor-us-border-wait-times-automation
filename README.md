@@ -141,6 +141,30 @@ A live test of `/detroitbwt` delivered all three Detroit POE replies after the A
 - `/sumasbwt`
 - `/sweetgrassbwt`
 
+### Individual POE commands
+
+You can also request a **single crossing** instead of every POE in an area. Individual crossing resolution is attempted before the grouped CBP port resolver.
+
+Examples:
+
+```text
+/nogalesbwt       → all Nogales POEs
+/mariposabwt      → Mariposa only
+/deconcinibwt     → DeConcini only
+/morleybwt        → Morley Gate only
+
+/hidalgopharrbwt  → all Hidalgo/Pharr POEs
+/anzalduasbwt     → Anzalduas International Bridge only
+
+/elpasobwt        → all El Paso POEs
+/botabwt          → Bridge of the Americas only
+/pdnbwt           → Paso Del Norte only
+/stantonbwt       → Stanton DCL only
+/ysletabwt        → Ysleta only
+```
+
+The resolver also attempts to match unique CBP `crossing_name` values dynamically, so many individual POEs do not require a hard-coded alias. Short aliases are included where the normal crossing name would make the command unnecessarily long.
+
 > **Multiple-message behavior:** grouped areas can exceed the compact reply budget. When that happens, the script returns multiple responses and the Automation Engine sends them sequentially with 2-second delays. The exact POE list can change if CBP changes its `port_name` grouping.
 
 ## What it reports
