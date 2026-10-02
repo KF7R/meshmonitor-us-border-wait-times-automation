@@ -16,6 +16,7 @@ API_URL = "https://bwt.cbp.gov/api/waittimes"
 HEADERS = {"User-Agent": "MeshMonitor-US-BorderWait-Automation/1.1"}
 TIMEOUT = 8
 MAX_REPLY_CHARS = 195
+MAX_REPLY_BYTES = 195
 
 ALIASES = {
     # Mexico
@@ -58,10 +59,11 @@ def requested_command():
         [os.environ.get("MESSAGE", ""), os.environ.get("TRIGGER", "")]
         + [v for k, v in os.environ.items() if k.startswith("PARAM_")]
     ).lower()
-    match = re.search(r"/?([a-z0-9]+)border\b", text)
+    match = re.search(r"(?<![a-z0-9_])/?([a-z0-9]+?)(?:bwt|border)\b", text)
     return match.group(1) if match else None
 
 def resolve_ports(data, command):
+    validate_ports(data)
     border_ports = [
         p for p in data
         if p.get("border") in ("Mexican Border", "Canadian Border")
@@ -163,6 +165,42 @@ def crossing_line(port):
 
     return f"🟢 {name} · {hours} · {' '.join(parts)}"
 
+def validate_ports(data):
+    """Reject malformed feeds before formatting or resolving their records."""
+    if not isinstance(data, list) or not data:
+        raise ValueError("CBP feed must be a nonempty array")
+    for port in data:
+        if not isinstance(port, dict):
+            raise ValueError("CBP port must be an object")
+        for field in ("border", "port_name"):
+            if not isinstance(port.get(field), str) or not port[field].strip():
+                raise ValueError(f"Missing or invalid {field}")
+        for field in ("crossing_name", "hours", "port_status"):
+            if port.get(field) is not None and not isinstance(port[field], str):
+                raise ValueError(f"Invalid {field}")
+        for field in ("passenger_vehicle_lanes", "pedestrian_lanes"):
+            group = port.get(field) or {}
+            if not isinstance(group, dict):
+                raise ValueError(f"Invalid {field}")
+            for key in ("standard_lanes", "ready_lanes", "NEXUS_SENTRI_lanes"):
+                lane = group.get(key)
+                if lane is not None and not isinstance(lane, dict):
+                    raise ValueError(f"Invalid {field}.{key}")
+
+def split_reply(text):
+    """Preserve all text while bounding both characters and UTF-8 bytes."""
+    chunks, chunk = [], ""
+    for char in text:
+        candidate = chunk + char
+        if len(candidate) > MAX_REPLY_CHARS or len(candidate.encode("utf-8")) > MAX_REPLY_BYTES:
+            chunks.append(chunk)
+            chunk = char
+        else:
+            chunk = candidate
+    if chunk:
+        chunks.append(chunk)
+    return chunks
+
 def build_report(data, command):
     matches = resolve_ports(data, command)
     if not matches:
@@ -173,9 +211,9 @@ def build_report(data, command):
         return f"🛂 /{command}bwt: waits unavailable."
 
     message = "\n".join(lines)
-    if len(message) <= MAX_REPLY_CHARS:
+    if len(message) <= MAX_REPLY_CHARS and len(message.encode("utf-8")) <= MAX_REPLY_BYTES:
         return message
-    return lines
+    return [chunk for line in lines for chunk in split_reply(line)]
 
 def main():
     command = requested_command()
@@ -198,3 +236,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

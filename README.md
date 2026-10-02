@@ -20,6 +20,28 @@ The included `border_wait.py` script does only the CBP lookup, port resolution, 
 
 The incoming Meshtastic message is available to the script as `MESSAGE`.
 
+Match documented commands with `(?i)^/[a-z0-9]+bwt# U.S. Border Wait Times — MeshMonitor Automation Engine
+
+A MeshMonitor **Automation Engine** version of the U.S. land-border wait-time responder.
+
+It reports current passenger-vehicle and pedestrian wait times for U.S. land ports of entry on both the Mexican and Canadian borders using the public U.S. Customs and Border Protection (CBP) Border Wait Times JSON feed.
+
+No CBP API key is required.
+
+This repository is intentionally separate from the older Auto Responder/script-trigger implementation.
+
+## How it works
+
+The Automation Engine handles the Meshtastic trigger and transmission:
+
+```text
+Message Trigger → Run Script → Conditional Branches → Send Message
+```
+
+The included `border_wait.py` script does only the CBP lookup, port resolution, formatting, and JSON return value.
+
+. The script also accepts the legacy `/<name>border` suffix, but the message trigger must explicitly include it if you want to serve those commands.
+
 ## Commands
 
 Commands use the form `/<name>bwt`.
@@ -342,9 +364,11 @@ For multiple replies, create branches for available array elements:
 border_wait.responses[0]
 border_wait.responses[1]
 border_wait.responses[2]
+border_wait.responses[3]
+...continue for every returned element
 ```
 
-Send each existing element with a separate **Send Message** action.
+Send each existing element with a separate **Send Message** action, in array order. Three actions are not enough for all areas: Buffalo, Brownsville, El Paso, and Laredo can return four or more messages. Long crossing lines can also require additional segments. Inspect the script output for each area you serve and add a condition, send action, and delay for every array index it can return. A fixed graph will omit any entries beyond its configured last index; this repository does not provide an automatic array loop.
 
 A delay between sequential messages is **required for reliable multi-POE delivery**. Without it, MeshMonitor may attempt to transmit several Meshtastic packets too quickly and later replies can be missed. Use a **2-second Delay (`action.delay`)** between each Send Message action.
 
@@ -364,6 +388,12 @@ Run Script
                          │          ↓
                          │   responses[2] exists?
                          │       └─ yes → Send Message 2
+                         │                  ↓
+                         │               Delay 2s
+                         │                  ↓
+                         │       responses[3] exists? → Send Message 3
+                         │                  ↓
+                         │       continue for all configured indices
 ```
 
 Select the MeshMonitor source and Meshtastic channel you want the replies transmitted on in the **Send Message** actions.
@@ -399,7 +429,7 @@ A live test confirmed this configuration can receive the BWT command through any
 For multi-POE commands such as `/detroitbwt`, `/nogalesbwt`, `/elpasobwt`, `/laredobwt`, `/buffalobwt`, and `/blainebwt`, do **not** connect multiple Send Message actions directly back-to-back. The tested pattern is:
 
 ```text
-Send Message 0 → Delay 2s → Send Message 1 → Delay 2s → Send Message 2
+Send Message 0 → Delay 2s → Send Message 1 → Delay 2s → Send Message 2 → Delay 2s → Send Message 3 → ...
 ```
 
 This pacing is part of the intended Automation Engine setup, not just an optional cosmetic delay. It was verified in a live multi-POE test: `/detroitbwt` successfully delivered all three Detroit POE messages after the responses were serialized with 2-second Delay actions.
@@ -434,8 +464,14 @@ MeshMonitor Automation Engine test/dry-run can validate the graph and stored res
 - Keeps open crossings visible as `waits pending` when wait data is missing.
 - Does not show stale lane waits when the overall port is closed.
 - Uses an 8-second HTTP timeout.
-- Uses a compact 195-character reply budget before returning multiple responses.
+- Bounds each reply to 195 characters and 195 UTF-8 bytes, including emoji.
+- Returns multiple responses when the combined report exceeds that budget; oversized individual crossing lines are split into additional segments without dropping text.
+- Returns the unavailable message for malformed or empty CBP feeds.
 - Does not transmit commercial lane data.
+
+### Local regression tests
+
+Run `python3 -m unittest discover -s tests -v` from the repository root. Tests use synthetic CBP records and mocked network calls; they do not transmit mesh messages.
 
 ## Requirements
 
@@ -448,3 +484,4 @@ No third-party Python packages are required.
 ## License
 
 MIT
+
