@@ -1,0 +1,234 @@
+{
+  "name": "Nogales BWT Waypoints",
+  "description": "Hourly Nogales border waypoints with one-minute pauses, Traffic channel and hop limit 3.",
+  "enabled": false,
+  "config": {
+    "version": 1,
+    "nodes": [
+      {
+        "id": "t",
+        "type": "trigger.schedule",
+        "params": {
+          "cron": "0 * * * *"
+        }
+      },
+      {
+        "id": "reset_deconcini",
+        "type": "flow.setVar",
+        "params": {
+          "variable": "bwt_waypoint",
+          "value": {}
+        }
+      },
+      {
+        "id": "run_deconcini",
+        "type": "action.runScript",
+        "params": {
+          "scriptPath": "bwt_waypoint_data.py",
+          "args": "deconcini",
+          "resultVariable": "bwt_waypoint",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "has_deconcini",
+        "type": "condition.variable",
+        "params": {
+          "variable": "bwt_waypoint.poe",
+          "op": "eq",
+          "value": "deconcini"
+        }
+      },
+      {
+        "id": "wp_deconcini",
+        "type": "action.broadcastWaypoint",
+        "params": {
+          "hopLimit": 3,
+          "sourceId": "YOUR-MESHMONITOR-SOURCE-ID",
+          "waypointKey": "deconcini-bwt",
+          "latitude": 31.3336,
+          "longitude": -110.9414,
+          "name": "DeConcini POE",
+          "description": "{{ var.bwt_waypoint.description }}",
+          "expireHours": "1",
+          "channel": 3,
+          "onlyWhenChanged": false,
+          "icon": "🛂"
+        }
+      },
+      {
+        "id": "delay_deconcini",
+        "type": "action.delay",
+        "params": {
+          "seconds": 60
+        }
+      },
+      {
+        "id": "reset_mariposa",
+        "type": "flow.setVar",
+        "params": {
+          "variable": "bwt_waypoint",
+          "value": {}
+        }
+      },
+      {
+        "id": "run_mariposa",
+        "type": "action.runScript",
+        "params": {
+          "scriptPath": "bwt_waypoint_data.py",
+          "args": "mariposa",
+          "resultVariable": "bwt_waypoint",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "has_mariposa",
+        "type": "condition.variable",
+        "params": {
+          "variable": "bwt_waypoint.poe",
+          "op": "eq",
+          "value": "mariposa"
+        }
+      },
+      {
+        "id": "wp_mariposa",
+        "type": "action.broadcastWaypoint",
+        "params": {
+          "hopLimit": 3,
+          "sourceId": "YOUR-MESHMONITOR-SOURCE-ID",
+          "waypointKey": "mariposa-bwt",
+          "latitude": 31.3339,
+          "longitude": -110.9656,
+          "name": "Mariposa POE",
+          "description": "{{ var.bwt_waypoint.description }}",
+          "expireHours": "1",
+          "channel": 3,
+          "onlyWhenChanged": false,
+          "icon": "🛂"
+        }
+      },
+      {
+        "id": "delay_mariposa",
+        "type": "action.delay",
+        "params": {
+          "seconds": 60
+        }
+      },
+      {
+        "id": "reset_morley",
+        "type": "flow.setVar",
+        "params": {
+          "variable": "bwt_waypoint",
+          "value": {}
+        }
+      },
+      {
+        "id": "run_morley",
+        "type": "action.runScript",
+        "params": {
+          "scriptPath": "bwt_waypoint_data.py",
+          "args": "morley",
+          "resultVariable": "bwt_waypoint",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "has_morley",
+        "type": "condition.variable",
+        "params": {
+          "variable": "bwt_waypoint.poe",
+          "op": "eq",
+          "value": "morley"
+        }
+      },
+      {
+        "id": "wp_morley",
+        "type": "action.broadcastWaypoint",
+        "params": {
+          "hopLimit": 3,
+          "sourceId": "YOUR-MESHMONITOR-SOURCE-ID",
+          "waypointKey": "morley-bwt",
+          "latitude": 31.33275,
+          "longitude": -110.9415,
+          "name": "Morley Gate POE",
+          "description": "{{ var.bwt_waypoint.description }}",
+          "expireHours": "1",
+          "channel": 3,
+          "onlyWhenChanged": false,
+          "icon": "🛂"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "t",
+        "to": "reset_deconcini"
+      },
+      {
+        "from": "reset_deconcini",
+        "to": "run_deconcini"
+      },
+      {
+        "from": "run_deconcini",
+        "to": "has_deconcini"
+      },
+      {
+        "from": "has_deconcini",
+        "to": "wp_deconcini",
+        "port": "true"
+      },
+      {
+        "from": "wp_deconcini",
+        "to": "delay_deconcini"
+      },
+      {
+        "from": "has_deconcini",
+        "to": "delay_deconcini",
+        "port": "false"
+      },
+      {
+        "from": "delay_deconcini",
+        "to": "reset_mariposa"
+      },
+      {
+        "from": "reset_mariposa",
+        "to": "run_mariposa"
+      },
+      {
+        "from": "run_mariposa",
+        "to": "has_mariposa"
+      },
+      {
+        "from": "has_mariposa",
+        "to": "wp_mariposa",
+        "port": "true"
+      },
+      {
+        "from": "wp_mariposa",
+        "to": "delay_mariposa"
+      },
+      {
+        "from": "has_mariposa",
+        "to": "delay_mariposa",
+        "port": "false"
+      },
+      {
+        "from": "delay_mariposa",
+        "to": "reset_morley"
+      },
+      {
+        "from": "reset_morley",
+        "to": "run_morley"
+      },
+      {
+        "from": "run_morley",
+        "to": "has_morley"
+      },
+      {
+        "from": "has_morley",
+        "to": "wp_morley",
+        "port": "true"
+      }
+    ]
+  }
+}
