@@ -485,3 +485,26 @@ No third-party Python packages are required.
 
 MIT
 
+
+## Native Nogales border waypoints
+
+The deployed setup uses MeshMonitor's native **Broadcast a waypoint** automation action. The data helper does not transmit directly through a Virtual Node.
+
+- Crossings: DeConcini, Mariposa and Morley Gate, each with a stable, separate waypoint key.
+- Hourly trigger: `0 * * * *`, starting at :00.
+- Order: DeConcini, then a 60-second pause, Mariposa, then a 60-second pause, Morley. Lookups add a few seconds, so :01 and :02 are approximate.
+- Traffic channel slot 3, hop limit 3, one-hour expiry; each hourly cycle broadcasts even when the wait is unchanged.
+- Keep the 🛂 icon, including DeConcini. DeConcini and Morley use separate coordinates, approximately 95 metres apart; labels may still overlap when zoomed out.
+- Before each lookup, clear `bwt_waypoint`; only broadcast when its `poe` matches the expected crossing. Text comparisons require `op: "eq"`.
+
+Install `bwt_waypoint_data.py` alongside `border_wait.py` in `/data/scripts`. Create a writable global JSON variable named `bwt_waypoint` with default `{}`. Use [the disabled portable configuration](examples/nogales-bwt-waypoints.disabled.json), replacing `YOUR-MESHMONITOR-SOURCE-ID` in all three waypoint actions with your intended transmitter (Nogales Spicy in this deployment). Enable after checking source, channel and coordinates. Disable the older DeConcini and Mariposa script timers to avoid duplicate producers.
+
+Read-only checks inside the container:
+
+```bash
+docker exec -u node meshmonitor python3 /data/scripts/bwt_waypoint_data.py deconcini
+docker exec -u node meshmonitor python3 /data/scripts/bwt_waypoint_data.py mariposa
+docker exec -u node meshmonitor python3 /data/scripts/bwt_waypoint_data.py morley
+```
+
+MeshMonitor enforces a persisted 30-minute minimum between native broadcasts of the same waypoint. A manual run during that interval can skip transmission even when the trace says `action ran`. This trace is not proof of reception. Check the waypoint's last broadcast time and confirm reception on another device. The initial live run recorded broadcasts for all three; the operator subsequently reported seeing DeConcini and Morley only, so Mariposa reception remains unconfirmed.
