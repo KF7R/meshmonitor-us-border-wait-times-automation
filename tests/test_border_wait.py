@@ -61,6 +61,17 @@ class BorderWaitTests(unittest.TestCase):
             self.assertLessEqual(len(reply), 195)
             self.assertLessEqual(len(reply.encode("utf-8")), 195)
 
+    def test_generic_crossing_names_get_port_name(self):
+        self.assertEqual(b.display_name(port("Bridge I", "Laredo")), "Laredo Bridge I")
+        self.assertEqual(b.display_name(port("Passenger", "Otay Mesa")), "Otay Mesa Passenger")
+        self.assertEqual(b.display_name(port("West", "Example")), "Example West")
+        # Distinctive names are left alone.
+        self.assertEqual(b.display_name(port("Mariposa")), "Mariposa")
+        self.assertEqual(b.display_name(port("Peace Arch", "Blaine")), "Peace Arch")
+        self.assertEqual(b.display_name(port("Deconcini")), "DeConcini")
+        # A port with no crossing name still shows the port name once.
+        self.assertEqual(b.display_name(port("", "Lukeville")), "Lukeville")
+
     def test_closed_port_hides_waits(self):
         record = port()
         record["port_status"] = "Closed"
