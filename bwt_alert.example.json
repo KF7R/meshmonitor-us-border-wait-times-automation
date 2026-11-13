@@ -1,0 +1,8 @@
+{
+  "thresholds": {
+    "deconcini": 60,
+    "mariposa": 45
+  },
+  "clear_fraction": 0.8,
+  "cooldown_minutes": 120
+}
