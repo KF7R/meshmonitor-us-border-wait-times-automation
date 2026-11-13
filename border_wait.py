@@ -127,10 +127,19 @@ def clean_hours(value):
     hours = re.sub(r"\s+(am|pm)", r"\1", hours, flags=re.I)
     return hours
 
+# CBP crossing names that do not identify a port on their own. Area replies
+# and waypoints otherwise read "East" or "Bridge I" with no port name.
+GENERIC_CROSSING_NAMES = {
+    "east", "west", "bridge i", "bridge ii", "commercial", "passenger",
+}
+
 def display_name(port):
     name = (port.get("crossing_name") or port.get("port_name") or "POE").strip()
     if name.lower() == "deconcini":
         return "DeConcini"
+    port_name = (port.get("port_name") or "").strip()
+    if name.lower() in GENERIC_CROSSING_NAMES and port_name:
+        return f"{port_name} {name}"
     return name
 
 def crossing_line(port):
