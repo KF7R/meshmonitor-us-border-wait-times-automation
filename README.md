@@ -508,3 +508,102 @@ docker exec -u node meshmonitor python3 /data/scripts/bwt_waypoint_data.py morle
 ```
 
 MeshMonitor enforces a persisted 30-minute minimum between native broadcasts of the same waypoint. A manual run during that interval can skip transmission even when the trace says `action ran`. This trace is not proof of reception. Check the waypoint's last broadcast time and confirm reception on another device. The initial live run recorded broadcasts for all three; the operator subsequently reported seeing DeConcini and Morley only, so Mariposa reception remains unconfirmed.
+
+## Backup alerts and historical baselines
+
+`bwt_alert.py` posts to a channel only when a crossing's standard
+passenger-vehicle wait reaches a threshold, and once more when it clears. It
+does not repeat a status every run.
+
+```text
+🛂 ⚠️ DeConcini backed up: 🚗95m (alert ≥85m)
+🛂 ✅ DeConcini cleared: 🚗60m
+```
+
+- **Alert** once when the wait reaches the threshold.
+- **Clear** once when it falls to `clear_fraction` × threshold (default
+  0.8). The gap stops a wait hovering around the line from flapping.
+- **Cooldown:** at most one alert per crossing per `cooldown_minutes`
+  (default 120).
+- **No post** for a closed crossing, a missing wait, or a failed CBP fetch.
+  The script prints `{"response": ""}`.
+- **Batching:** crossings that change in the same run share one message when
+  they fit in the byte budget.
+- **State** is kept in `$BWT_STATE_DIR/bwt_alert_state.json` (default
+  `/data/scripts/state`).
+
+### Configure
+
+Copy `bwt_alert.example.json` to `bwt_alert.json` next to the script, or
+point `BWT_ALERT_CONFIG` at another path. Keys can take three forms:
+
+| Key | Covers |
+|---|---|
+| `/<name>bwt` name, e.g. `mariposa` | That crossing |
+| Area name, e.g. `nogales` | Every crossing in the area |
+| `area/crossing`, e.g. `laredo/bridgei` | One crossing whose name is not unique |
+
+```json
+{"thresholds": {"deconcini": 85, "mariposa": 75},
+ "clear_fraction": 0.8, "cooldown_minutes": 120}
+```
+
+### Pick thresholds from CBP history
+
+`bwt_baseline.py` reads CBP's historical averages and suggests a threshold
+for each crossing. By default that's the 90th percentile of open hours for
+the month, so the alert fires in roughly the busiest 10% of hours. It only
+reads data and sends nothing.
+
+```bash
+docker exec -u node meshmonitor python3 /data/scripts/bwt_baseline.py nogales 11
+```
+
+```text
+DeConcini (month 11): typical 50.5m, p90 85m, max 132m, ~17 hours/week at or above threshold
+  busiest: Sat 15:00 132m, Sat 14:00 132m, Mon 16:00 120m, Sat 16:00 114m, Sat 13:00 114m
+Mariposa (month 11): typical 44m, p90 75m, max 102m, ~14 hours/week at or above threshold
+  busiest: Sat 14:00 102m, Sat 15:00 96m, Sat 16:00 90m, Tue 15:00 83m, Sat 12:00 82m
+Morley Gate: no passenger-vehicle history for month 11.
+```
+
+It ends with a ready-to-use `bwt_alert.json`. A different month and
+percentile can be passed as extra arguments, e.g. `bwt_baseline.py mariposa 7 80`.
+
+The history comes from the endpoint behind the **Historical** page on
+bwt.cbp.gov. No key is needed:
+
+```text
+https://bwt.cbp.gov/api/historicalwaittimes/<bwtId>/POV/GEN/<month>/7
+```
+
+- **Shape:** one average per weekday and hour. `bwt_day` runs from 0 (Monday)
+  to 6 (Sunday), `time_slot` is the local hour at the port, and
+  `pv_time_avg` is the standard car wait.
+- **Coverage:** CBP does not say which years the averages cover.
+- **Direction:** like the live feed, these are northbound waits into the
+  U.S. only.
+- **IDs:** `bwtId` comes from `/api/bwtmodern/crossingslist`. Its last six
+  digits are the `port_number` in the live feed.
+
+### Schedule it
+
+Run the alert script on a schedule and send its `response` or `responses` to
+the channel. In MeshMonitor:
+
+1. Go to **Automation → Timer Triggers**.
+2. Set the response type to **Script** and the script to `bwt_alert.py`.
+3. Pick the channel and a cron of every 15 minutes, e.g. `3,18,33,48 * * * *`.
+   CBP updates the feed roughly hourly, so polling faster adds nothing.
+
+`bwt_alert.py` was dry-run inside MeshMonitor 4.17.2 against the live CBP
+feed, and the same alert logic runs live on a Timer Trigger in one
+deployment. A scheduled Automation Engine workflow using the Run Script →
+Send Message pattern above should also work, but it hasn't been tested.
+
+Check it without transmitting by pointing the state at a scratch directory:
+
+```bash
+docker exec -u node -e BWT_STATE_DIR=/tmp/bwt-dry meshmonitor \
+  python3 /data/scripts/bwt_alert.py
+```
